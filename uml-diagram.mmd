@@ -1,0 +1,217 @@
+classDiagram
+    %% Domain Entities
+    class User {
+        <<Entity>>
+        -UUID id
+        -String username
+        -String displayName
+        -String passwordHash
+        -String avatarUrl
+        -Instant createdAt
+        +pre() void
+        +getters/setters()
+    }
+
+    class Conversation {
+        <<Entity>>
+        -UUID id
+        -boolean isDirect
+        -Instant createdAt
+        +pre() void
+        +getters/setters()
+    }
+
+    class ConversationMember {
+        <<Entity>>
+        -UUID id
+        -UUID conversationId
+        -UUID userId
+        -Instant joinedAt
+        -UUID lastReadMessageId
+        +pre() void
+        +getters/setters()
+    }
+
+    class Message {
+        <<Entity>>
+        -UUID id
+        -UUID conversationId
+        -UUID senderId
+        -String content
+        -Instant createdAt
+        -Instant editedAt
+        +pre() void
+        +getters/setters()
+    }
+
+    class CallSession {
+        <<Entity>>
+        -UUID id
+        -UUID conversationId
+        -UUID callerId
+        -UUID calleeId
+        -String status
+        -Instant startedAt
+        -Instant endedAt
+        +pre() void
+        +getters/setters()
+    }
+
+    %% Repositories
+    class UserRepository {
+        <<interface>>
+        +findByUsername(String) Optional~User~
+    }
+
+    class ConversationRepository {
+        <<interface>>
+        +save(Conversation) Conversation
+        +findById(UUID) Optional~Conversation~
+    }
+
+    class ConversationMemberRepository {
+        <<interface>>
+        +save(ConversationMember) ConversationMember
+        +findByUserId(UUID) List~ConversationMember~
+    }
+
+    class MessageRepository {
+        <<interface>>
+        +save(Message) Message
+        +findByConversationIdOrderByCreatedAtDesc(UUID, Pageable) List~Message~
+    }
+
+    class CallSessionRepository {
+        <<interface>>
+        +save(CallSession) CallSession
+        +findById(UUID) Optional~CallSession~
+    }
+
+    %% Services
+    class AuthService {
+        <<Service>>
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
+        -JwtService jwtService
+        +register(RegisterRequest) TokenResponse
+        +login(LoginRequest) TokenResponse
+    }
+
+    class ConversationService {
+        <<Service>>
+        -ConversationRepository conversationRepository
+        -ConversationMemberRepository memberRepository
+        +create(boolean, List~UUID~) Conversation
+        +listMemberships(UUID) List~ConversationMember~
+    }
+
+    class MessageService {
+        <<Service>>
+        -MessageRepository messageRepository
+        +send(UUID, UUID, String) Message
+        +history(UUID, int) List~Message~
+    }
+
+    %% Security
+    class JwtService {
+        <<Service>>
+        -String SECRET_B64
+        +generateAccessToken(UUID, String) String
+        +generateRefreshToken(UUID, String) String
+        +parse(String) Claims
+    }
+
+    class AppUserDetailsService {
+        <<Service>>
+        -UserRepository userRepository
+        +loadUserByUsername(String) UserDetails
+    }
+
+    class JwtAuthFilter {
+        <<Component>>
+        -JwtService jwtService
+        +doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) void
+    }
+
+    class SecurityConfig {
+        <<Configuration>>
+        +securityFilterChain(HttpSecurity) SecurityFilterChain
+        +passwordEncoder() PasswordEncoder
+    }
+
+    %% Controllers
+    class AuthController {
+        <<RestController>>
+        -AuthService authService
+        +register(RegisterRequest) TokenResponse
+        +login(LoginRequest) TokenResponse
+    }
+
+    class UserController {
+        <<RestController>>
+        -UserRepository userRepository
+        +me(User) MeResponse
+    }
+
+    class ConversationController {
+        <<RestController>>
+        -ConversationService conversationService
+        -UserRepository userRepository
+        +create(CreateConversationRequest, User) ConversationResponse
+        +myConversations(User) List
+    }
+
+    class MessageController {
+        <<RestController>>
+        -MessageService messageService
+        -UserRepository userRepository
+        -SimpMessagingTemplate messagingTemplate
+        +send(UUID, SendMessageRequest, User) MessageResponse
+        +history(UUID, int) List~MessageResponse~
+    }
+
+    class GlobalExceptionHandler {
+        <<RestControllerAdvice>>
+        +handleException(Exception) ResponseEntity
+    }
+
+    class WebSocketConfig {
+        <<Configuration>>
+        +configureMessageBroker(MessageBrokerRegistry) void
+        +registerStompEndpoints(StompEndpointRegistry) void
+    }
+
+    %% Repository Dependencies
+    UserRepository --> User : manages
+    ConversationRepository --> Conversation : manages
+    ConversationMemberRepository --> ConversationMember : manages
+    MessageRepository --> Message : manages
+    CallSessionRepository --> CallSession : manages
+
+    %% Service Dependencies
+    AuthService --> UserRepository : uses
+    AuthService --> JwtService : uses
+    ConversationService --> ConversationRepository : uses
+    ConversationService --> ConversationMemberRepository : uses
+    MessageService --> MessageRepository : uses
+    AppUserDetailsService --> UserRepository : uses
+
+    %% Controller Dependencies
+    AuthController --> AuthService : uses
+    UserController --> UserRepository : uses
+    ConversationController --> ConversationService : uses
+    ConversationController --> UserRepository : uses
+    MessageController --> MessageService : uses
+    MessageController --> UserRepository : uses
+
+    %% Security Dependencies
+    JwtAuthFilter --> JwtService : uses
+    SecurityConfig --> JwtAuthFilter : configures
+
+    %% Domain Relationships
+    ConversationMember --> Conversation : belongs to
+    ConversationMember --> User : references
+    Message --> Conversation : belongs to
+    Message --> User : sent by
+    CallSession --> Conversation : belongs to
+    CallSession --> User : caller/callee
