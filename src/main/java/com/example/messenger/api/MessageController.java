@@ -5,6 +5,11 @@ import com.example.messenger.api.dto.MessageDtos;
 import com.example.messenger.domain.Message;
 import com.example.messenger.repo.UserRepository;
 import com.example.messenger.service.MessageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Messages", description = "Message management APIs")
 @RestController
 @RequestMapping("/api/v1")
 public class MessageController {
@@ -27,8 +33,14 @@ public class MessageController {
         this.messagingTemplate = messagingTemplate;
     }
 
+    @Operation(summary = "Send a message",
+            description = "Sends a message to a conversation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Message sent successfully"),
+            @ApiResponse(responseCode = "404", description = "Conversation not found")
+    })
     @PostMapping("/conversations/{id}/messages")
-    public MessageDtos.MessageResponse send(@PathVariable("id") UUID conversationId,
+    public MessageDtos.MessageResponse send(@Parameter(description = "Conversation ID") @PathVariable("id") UUID conversationId,
                                             @Valid @RequestBody MessageDtos.SendMessageRequest req,
                                             @AuthenticationPrincipal User principal) {
         var me = userRepository.findByUsername(principal.getUsername()).orElseThrow();

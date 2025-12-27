@@ -1,0 +1,52 @@
+
+erDiagram
+    users ||--o{ conversation_members : "is member of"
+    users ||--o{ messages : "sends"
+    users ||--o{ call_sessions : "initiates as caller"
+    users ||--o{ call_sessions : "receives as callee"
+    conversations ||--o{ conversation_members : "has members"
+    conversations ||--o{ messages : "contains"
+    conversations ||--o{ call_sessions : "has calls"
+    messages ||--o| conversation_members : "last read"
+
+    users {
+        uuid id PK
+        varchar username UK "max 50 chars"
+        varchar display_name
+        varchar password_hash
+        varchar avatar_url
+        timestamp created_at
+    }
+
+    conversations {
+        uuid id PK
+        boolean is_direct "true for 1-on-1 chats"
+        timestamp created_at
+    }
+
+    conversation_members {
+        uuid id PK
+        uuid conversation_id FK
+        uuid user_id FK
+        timestamp joined_at
+        uuid last_read_message_id FK "nullable"
+    }
+
+    messages {
+        uuid id PK
+        uuid conversation_id FK
+        uuid sender_id FK
+        varchar content "max 4000 chars"
+        timestamp created_at
+        timestamp edited_at "nullable"
+    }
+
+    call_sessions {
+        uuid id PK
+        uuid conversation_id FK
+        uuid caller_id FK
+        uuid callee_id FK
+        varchar status "INITIATED, RINGING, ACTIVE, ENDED"
+        timestamp started_at "nullable"
+        timestamp ended_at "nullable"
+    }
