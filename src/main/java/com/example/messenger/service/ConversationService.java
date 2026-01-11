@@ -6,6 +6,8 @@ import com.example.messenger.domain.Conversation;
 import com.example.messenger.domain.ConversationMember;
 import com.example.messenger.repo.ConversationMemberRepository;
 import com.example.messenger.repo.ConversationRepository;
+import com.example.messenger.repo.api.GenericConversationMemberRepository;
+import com.example.messenger.repo.api.GenericConversationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +16,10 @@ import java.util.UUID;
 
 @Service
 public class ConversationService {
-    private final ConversationRepository conversationRepository;
-    private final ConversationMemberRepository memberRepository;
+    private final GenericConversationRepository conversationRepository;
+    private final GenericConversationMemberRepository memberRepository;
 
-    public ConversationService(ConversationRepository conversationRepository, ConversationMemberRepository memberRepository) {
+    public ConversationService(GenericConversationRepository conversationRepository, GenericConversationMemberRepository memberRepository) {
         this.conversationRepository = conversationRepository;
         this.memberRepository = memberRepository;
     }
@@ -42,7 +44,7 @@ public class ConversationService {
 
     @Transactional
     public void delete(UUID conversationId) {
-        memberRepository.deleteByConversationId(conversationId);
+        memberRepository.deleteById(conversationId);
         conversationRepository.deleteById(conversationId);
     }
 
