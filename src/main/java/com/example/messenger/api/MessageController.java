@@ -4,6 +4,7 @@ package com.example.messenger.api;
 import com.example.messenger.api.dto.MessageDtos;
 import com.example.messenger.domain.Message;
 import com.example.messenger.repo.UserRepository;
+import com.example.messenger.repo.api.GenericUserRepository;
 import com.example.messenger.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,10 +25,10 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 public class MessageController {
     private final MessageService messageService;
-    private final UserRepository userRepository;
+    private final GenericUserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public MessageController(MessageService messageService, UserRepository userRepository, SimpMessagingTemplate messagingTemplate) {
+    public MessageController(MessageService messageService, GenericUserRepository userRepository, SimpMessagingTemplate messagingTemplate) {
         this.messageService = messageService;
         this.userRepository = userRepository;
         this.messagingTemplate = messagingTemplate;

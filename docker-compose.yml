@@ -1,7 +1,7 @@
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: messenger-db
+  postgres:
+    image: postgres:16
+    container_name: messenger-postgres
     environment:
       POSTGRES_DB: messenger
       POSTGRES_USER: messenger
@@ -14,7 +14,39 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - messenger-network
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: messenger-dynamodb
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    networks:
+      - messenger-network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: DynamoDB Admin UI for easier table management
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: messenger-dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      DYNAMO_ENDPOINT: http://dynamodb-local:8000
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    depends_on:
+      - dynamodb-local
+    networks:
+      - messenger-network
 
   app:
     build: .
@@ -28,8 +60,13 @@ services:
       SPRING_FLYWAY_ENABLED: "true"
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
 
 volumes:
-  postgres_data:
+  postgres-data:
+  dynamodb-data:
+
+networks:
+  messenger-network:
+    driver: bridge

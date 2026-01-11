@@ -4,6 +4,7 @@ package com.example.messenger.api;
 import com.example.messenger.api.dto.ConversationDtos;
 import com.example.messenger.domain.Conversation;
 import com.example.messenger.repo.UserRepository;
+import com.example.messenger.repo.api.GenericUserRepository;
 import com.example.messenger.service.ConversationService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +21,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/conversations")
 public class ConversationController {
     private final ConversationService conversationService;
-    private final UserRepository userRepository;
+    private final GenericUserRepository userRepository;
 
-    public ConversationController(ConversationService conversationService, UserRepository userRepository) {
+    public ConversationController(ConversationService conversationService, GenericUserRepository userRepository) {
         this.conversationService = conversationService;
         this.userRepository = userRepository;
     }
