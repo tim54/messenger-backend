@@ -3,6 +3,7 @@ package com.example.messenger.service;
 
 import com.example.messenger.domain.Message;
 import com.example.messenger.repo.MessageRepository;
+import com.example.messenger.repo.api.GenericMessageRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +12,9 @@ import java.util.UUID;
 
 @Service
 public class MessageService {
-    private final MessageRepository messageRepository;
+    private final GenericMessageRepository messageRepository;
 
-    public MessageService(MessageRepository messageRepository) { this.messageRepository = messageRepository; }
+    public MessageService(GenericMessageRepository messageRepository) { this.messageRepository = messageRepository; }
 
     public Message send(UUID conversationId, UUID senderId, String content) {
         Message m = new Message();

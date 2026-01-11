@@ -1,7 +1,14 @@
 package com.example.messenger.repo.dynamodb.model;
 
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 import java.time.Instant;
+
+import software.amazon.awssdk.enhanced.dynamodb.internal.converter.attribute.InstantAsStringAttributeConverter;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbConvertedBy;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 
 @DynamoDbBean
 public class MessageDynamoModel {
@@ -10,6 +17,7 @@ public class MessageDynamoModel {
     private String senderId;
     private String content;
     private Instant createdAt;
+    private Instant editedAt;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("id")
@@ -21,8 +29,7 @@ public class MessageDynamoModel {
         this.id = id;
     }
 
-    @DynamoDbSecondaryPartitionKey(indexNames = "conversation-index")
-    @DynamoDbSecondarySortKey(indexNames = "conversation-index")
+    @DynamoDbSecondaryPartitionKey(indexNames = "conversation-created-index")
     @DynamoDbAttribute("conversationId")
     public String getConversationId() {
         return conversationId;
@@ -33,7 +40,7 @@ public class MessageDynamoModel {
     }
 
     @DynamoDbAttribute("senderId")
-    public String senderId() {
+    public String getSenderId() {
         return senderId;
     }
 
@@ -42,7 +49,7 @@ public class MessageDynamoModel {
     }
 
     @DynamoDbAttribute("content")
-    public String content() {
+    public String getContent() {
         return content;
     }
 
@@ -50,12 +57,24 @@ public class MessageDynamoModel {
         this.content = content;
     }
 
+    @DynamoDbSecondarySortKey(indexNames = "conversation-created-index")
+    @DynamoDbConvertedBy(InstantAsStringAttributeConverter.class)
     @DynamoDbAttribute("createdAt")
-    public Instant createdAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @DynamoDbConvertedBy(InstantAsStringAttributeConverter.class)
+    @DynamoDbAttribute("editedAt")
+    public Instant getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Instant editedAt) {
+        this.editedAt = editedAt;
     }
 }
