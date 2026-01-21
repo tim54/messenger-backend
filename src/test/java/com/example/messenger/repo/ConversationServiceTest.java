@@ -5,6 +5,8 @@ import com.example.messenger.domain.Conversation;
 import com.example.messenger.domain.ConversationMember;
 import com.example.messenger.repo.ConversationMemberRepository;
 import com.example.messenger.repo.ConversationRepository;
+import com.example.messenger.repo.api.GenericConversationMemberRepository;
+import com.example.messenger.repo.api.GenericConversationRepository;
 import com.example.messenger.service.ConversationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,10 +32,10 @@ import static org.mockito.Mockito.*;
 class ConversationServiceTest {
 
     @Mock
-    private ConversationRepository conversationRepository;
+    private GenericConversationRepository conversationRepository;
 
     @Mock
-    private ConversationMemberRepository memberRepository;
+    private GenericConversationMemberRepository memberRepository;
 
     @InjectMocks
     private ConversationService conversationService;
@@ -187,19 +189,19 @@ class ConversationServiceTest {
     @DisplayName("Should delete conversation and all its members")
     void testDelete_WhenConversationExists_ShouldDeleteConversationAndMembers() {
         // Given
-        doNothing().when(memberRepository).deleteByConversationId(conversationId);
+        doNothing().when(memberRepository).deleteById(conversationId);
         doNothing().when(conversationRepository).deleteById(conversationId);
 
         // When
         conversationService.delete(conversationId);
 
         // Then
-        verify(memberRepository, times(1)).deleteByConversationId(conversationId);
+        verify(memberRepository, times(1)).deleteById(conversationId);
         verify(conversationRepository, times(1)).deleteById(conversationId);
         
         // Verify order: members are deleted before conversation
         var inOrder = inOrder(memberRepository, conversationRepository);
-        inOrder.verify(memberRepository).deleteByConversationId(conversationId);
+        inOrder.verify(memberRepository).deleteById(conversationId);
         inOrder.verify(conversationRepository).deleteById(conversationId);
     }
 
@@ -207,14 +209,14 @@ class ConversationServiceTest {
     @DisplayName("Should handle delete when conversation has no members")
     void testDelete_WhenConversationHasNoMembers_ShouldStillDeleteConversation() {
         // Given
-        doNothing().when(memberRepository).deleteByConversationId(conversationId);
+        doNothing().when(memberRepository).deleteById(conversationId);
         doNothing().when(conversationRepository).deleteById(conversationId);
 
         // When
         conversationService.delete(conversationId);
 
         // Then
-        verify(memberRepository, times(1)).deleteByConversationId(conversationId);
+        verify(memberRepository, times(1)).deleteById(conversationId);
         verify(conversationRepository, times(1)).deleteById(conversationId);
     }
 

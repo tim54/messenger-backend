@@ -3,6 +3,7 @@ package com.example.messenger.repo;
 
 import com.example.messenger.domain.Message;
 import com.example.messenger.repo.MessageRepository;
+import com.example.messenger.repo.api.GenericMessageRepository;
 import com.example.messenger.service.MessageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 class MessageServiceTest {
 
     @Mock
-    private MessageRepository messageRepository;
+    private GenericMessageRepository messageRepository;
 
     @InjectMocks
     private MessageService messageService;

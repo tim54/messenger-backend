@@ -5,6 +5,7 @@ import com.example.messenger.api.dto.ConversationDtos;
 import com.example.messenger.domain.Conversation;
 import com.example.messenger.domain.ConversationMember;
 import com.example.messenger.repo.UserRepository;
+import com.example.messenger.repo.api.GenericUserRepository;
 import com.example.messenger.service.ConversationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +34,7 @@ class ConversationControllerTest {
     private ConversationService conversationService;
 
     @Mock
-    private UserRepository userRepository;
+    private GenericUserRepository userRepository;
 
     @InjectMocks
     private ConversationController conversationController;

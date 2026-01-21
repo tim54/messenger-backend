@@ -45,9 +45,9 @@ public class DynamoDbUserRepository implements GenericUserRepository {
                         QueryConditional.keyEqualTo(k -> k.partitionValue(username))
                 )).stream()
                 .flatMap(page -> page.items().stream())
-                .collect(Collectors.toList());
+                .toList();
 
-        return results.isEmpty() ? Optional.empty() : Optional.of(mapper.toDomain(results.get(0)));
+        return results.isEmpty() ? Optional.empty() : Optional.of(mapper.toDomain(results.getFirst()));
     }
 
     @Override
