@@ -1,10 +1,8 @@
 
-package com.example.messenger.repo;
+package service;
 
 import com.example.messenger.domain.Conversation;
 import com.example.messenger.domain.ConversationMember;
-import com.example.messenger.repo.ConversationMemberRepository;
-import com.example.messenger.repo.ConversationRepository;
 import com.example.messenger.repo.api.GenericConversationMemberRepository;
 import com.example.messenger.repo.api.GenericConversationRepository;
 import com.example.messenger.service.ConversationService;
@@ -35,7 +33,7 @@ class ConversationServiceTest {
     private GenericConversationRepository conversationRepository;
 
     @Mock
-    private GenericConversationMemberRepository memberRepository;
+    private GenericConversationMemberRepository conversationMemberRepository;
 
     @InjectMocks
     private ConversationService conversationService;
@@ -64,8 +62,12 @@ class ConversationServiceTest {
         List<UUID> memberIds = Arrays.asList(userId1, userId2);
         Conversation mockConversation = createConversation(conversationId, true);
         
-        when(conversationRepository.save(any(Conversation.class))).thenReturn(mockConversation);
-        when(memberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(conversationRepository.save(any(Conversation.class))).thenAnswer(invocation -> {
+            Conversation c = invocation.getArgument(0);
+            c.setId(mockConversation.getId()); // ensure the SAME instance used by the service has an id
+            return c;
+        });
+        when(conversationMemberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         Conversation result = conversationService.create(true, memberIds);
@@ -79,7 +81,7 @@ class ConversationServiceTest {
         Conversation savedConversation = conversationCaptor.getValue();
         assertThat(savedConversation.isDirect()).isTrue();
 
-        verify(memberRepository, times(2)).save(memberCaptor.capture());
+        verify(conversationMemberRepository, times(2)).save(memberCaptor.capture());
         List<ConversationMember> savedMembers = memberCaptor.getAllValues();
         assertThat(savedMembers).hasSize(2);
         assertThat(savedMembers).extracting(ConversationMember::getUserId)
@@ -96,7 +98,7 @@ class ConversationServiceTest {
         Conversation mockConversation = createConversation(conversationId, false);
         
         when(conversationRepository.save(any(Conversation.class))).thenReturn(mockConversation);
-        when(memberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(conversationMemberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         Conversation result = conversationService.create(false, memberIds);
@@ -106,7 +108,7 @@ class ConversationServiceTest {
         assertThat(result.isDirect()).isFalse();
         
         verify(conversationRepository, times(1)).save(any(Conversation.class));
-        verify(memberRepository, times(3)).save(any(ConversationMember.class));
+        verify(conversationMemberRepository, times(3)).save(any(ConversationMember.class));
     }
 
     @Test
@@ -116,8 +118,12 @@ class ConversationServiceTest {
         List<UUID> memberIds = List.of(userId1);
         Conversation mockConversation = createConversation(conversationId, true);
         
-        when(conversationRepository.save(any(Conversation.class))).thenReturn(mockConversation);
-        when(memberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(conversationRepository.save(any(Conversation.class))).thenAnswer(invocation -> {
+            Conversation c = invocation.getArgument(0);
+            c.setId(mockConversation.getId()); // ensure the SAME instance used by the service has an id
+            return c;
+        });
+        when(conversationMemberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         Conversation result = conversationService.create(true, memberIds);
@@ -125,7 +131,7 @@ class ConversationServiceTest {
         // Then
         assertThat(result).isNotNull();
         verify(conversationRepository, times(1)).save(any(Conversation.class));
-        verify(memberRepository, times(1)).save(memberCaptor.capture());
+        verify(conversationMemberRepository, times(1)).save(memberCaptor.capture());
         
         ConversationMember savedMember = memberCaptor.getValue();
         assertThat(savedMember.getUserId()).isEqualTo(userId1);
@@ -147,7 +153,7 @@ class ConversationServiceTest {
         // Then
         assertThat(result).isNotNull();
         verify(conversationRepository, times(1)).save(any(Conversation.class));
-        verify(memberRepository, never()).save(any(ConversationMember.class));
+        verify(conversationMemberRepository, never()).save(any(ConversationMember.class));
     }
 
     @Test
@@ -158,7 +164,7 @@ class ConversationServiceTest {
         ConversationMember member2 = createConversationMember(UUID.randomUUID(), userId1);
         List<ConversationMember> expectedMembers = Arrays.asList(member1, member2);
         
-        when(memberRepository.findByUserId(userId1)).thenReturn(expectedMembers);
+        when(conversationMemberRepository.findByUserId(userId1)).thenReturn(expectedMembers);
 
         // When
         List<ConversationMember> result = conversationService.listMemberships(userId1);
@@ -167,14 +173,14 @@ class ConversationServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
         assertThat(result).containsExactlyElementsOf(expectedMembers);
-        verify(memberRepository, times(1)).findByUserId(userId1);
+        verify(conversationMemberRepository, times(1)).findByUserId(userId1);
     }
 
     @Test
     @DisplayName("Should return empty list when user has no memberships")
     void testListMemberships_WhenUserHasNoMemberships_ShouldReturnEmptyList() {
         // Given
-        when(memberRepository.findByUserId(userId1)).thenReturn(List.of());
+        when(conversationMemberRepository.findByUserId(userId1)).thenReturn(List.of());
 
         // When
         List<ConversationMember> result = conversationService.listMemberships(userId1);
@@ -182,26 +188,26 @@ class ConversationServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
-        verify(memberRepository, times(1)).findByUserId(userId1);
+        verify(conversationMemberRepository, times(1)).findByUserId(userId1);
     }
 
     @Test
     @DisplayName("Should delete conversation and all its members")
     void testDelete_WhenConversationExists_ShouldDeleteConversationAndMembers() {
         // Given
-        doNothing().when(memberRepository).deleteById(conversationId);
+        doNothing().when(conversationMemberRepository).deleteById(conversationId);
         doNothing().when(conversationRepository).deleteById(conversationId);
 
         // When
         conversationService.delete(conversationId);
 
         // Then
-        verify(memberRepository, times(1)).deleteById(conversationId);
+        verify(conversationMemberRepository, times(1)).deleteById(conversationId);
         verify(conversationRepository, times(1)).deleteById(conversationId);
         
         // Verify order: members are deleted before conversation
-        var inOrder = inOrder(memberRepository, conversationRepository);
-        inOrder.verify(memberRepository).deleteById(conversationId);
+        var inOrder = inOrder(conversationMemberRepository, conversationRepository);
+        inOrder.verify(conversationMemberRepository).deleteById(conversationId);
         inOrder.verify(conversationRepository).deleteById(conversationId);
     }
 
@@ -209,14 +215,14 @@ class ConversationServiceTest {
     @DisplayName("Should handle delete when conversation has no members")
     void testDelete_WhenConversationHasNoMembers_ShouldStillDeleteConversation() {
         // Given
-        doNothing().when(memberRepository).deleteById(conversationId);
+        doNothing().when(conversationMemberRepository).deleteById(conversationId);
         doNothing().when(conversationRepository).deleteById(conversationId);
 
         // When
         conversationService.delete(conversationId);
 
         // Then
-        verify(memberRepository, times(1)).deleteById(conversationId);
+        verify(conversationMemberRepository, times(1)).deleteById(conversationId);
         verify(conversationRepository, times(1)).deleteById(conversationId);
     }
 
@@ -228,15 +234,15 @@ class ConversationServiceTest {
         Conversation mockConversation = createConversation(conversationId, true);
         
         when(conversationRepository.save(any(Conversation.class))).thenReturn(mockConversation);
-        when(memberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(conversationMemberRepository.save(any(ConversationMember.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         conversationService.create(true, memberIds);
 
         // Then
-        var inOrder = inOrder(conversationRepository, memberRepository);
+        var inOrder = inOrder(conversationRepository, conversationMemberRepository);
         inOrder.verify(conversationRepository).save(any(Conversation.class));
-        inOrder.verify(memberRepository).save(any(ConversationMember.class));
+        inOrder.verify(conversationMemberRepository).save(any(ConversationMember.class));
     }
 
     private Conversation createConversation(UUID id, boolean isDirect) {

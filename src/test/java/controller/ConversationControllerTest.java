@@ -1,10 +1,9 @@
-package com.example.messenger.repo;
+package controller;
 
 import com.example.messenger.api.ConversationController;
 import com.example.messenger.api.dto.ConversationDtos;
 import com.example.messenger.domain.Conversation;
 import com.example.messenger.domain.ConversationMember;
-import com.example.messenger.repo.UserRepository;
 import com.example.messenger.repo.api.GenericUserRepository;
 import com.example.messenger.service.ConversationService;
 import org.junit.jupiter.api.BeforeEach;

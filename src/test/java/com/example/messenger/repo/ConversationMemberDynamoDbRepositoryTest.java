@@ -25,10 +25,10 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @ActiveProfiles({"test", "dynamodb"})
-class DynamoDbConversationMemberRepositoryTest {
+class ConversationMemberDynamoDbRepositoryTest {
 
     private static final String TABLE_NAME = "ConversationMembers";
     private static final String CONVERSATION_INDEX = "conversation-index";

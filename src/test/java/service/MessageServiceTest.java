@@ -1,8 +1,7 @@
 
-package com.example.messenger.repo;
+package service;
 
 import com.example.messenger.domain.Message;
-import com.example.messenger.repo.MessageRepository;
 import com.example.messenger.repo.api.GenericMessageRepository;
 import com.example.messenger.service.MessageService;
 import org.junit.jupiter.api.BeforeEach;

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles({"test", "postgres"})
 @DisplayName("ConversationMemberRepository Tests")
-class ConversationMemberRepositoryTest {
+class ConversationMemberPostgresRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
