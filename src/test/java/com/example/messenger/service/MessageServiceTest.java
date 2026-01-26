@@ -1,5 +1,5 @@
 
-package service;
+package com.example.messenger.service;
 
 import com.example.messenger.domain.Message;
 import com.example.messenger.repo.api.GenericMessageRepository;

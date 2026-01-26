@@ -1,4 +1,4 @@
-package controller;
+package com.example.messenger.controller;
 
 import com.example.messenger.api.ConversationController;
 import com.example.messenger.api.dto.ConversationDtos;

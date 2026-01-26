@@ -1,5 +1,4 @@
-
-package service;
+package com.example.messenger.service;
 
 import com.example.messenger.domain.Conversation;
 import com.example.messenger.domain.ConversationMember;
